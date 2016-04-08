@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Query 7</title>
+    <h1>Created twitter account for Each Year</h1>
+<style>
+    svg {
+    font: 10px sans-serif;
+    }
+    .bar rect {
+    fill: steelblue;
+    shape-rendering: crispEdges;
+    }
+    .axis path, .axis line {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+    }
+    .line {
+    fill: none;
+    stroke: purple;
+    stroke-width: 1.5px;
+    }
+</style>
+<body>
+<script src="//d3js.org/d3.v3.min.js"></script>
+<script>
+//sample based upon: http://www.pryor.com/blog/creating-a-pareto-chart-in-excel/
+//TODO - perhaps add circle "points" on the line to match the reference sample
+
+  //Set dimensions
+var m = {top: 50, right: 50, bottom: 50, left: 50}
+  , h = 500 - m.top - m.bottom
+  , w = 960 - m.left - m.right
+  , barWidth = 5;
+
+var dataset = null;
+
+d3.csv("result_7.csv",function(error,data){
+  if (error) return console.log(error);
+
+  //typecast Counts to #, calculate total, and cumulative Countss
+  var totalCounts = 0;
+  for(var i = 0; i < data.length; i++){
+    data[i].Counts = +data[i].Counts;
+    totalCounts += data[i].Counts;
+    if(i > 0){
+      data[i]['CumulativeCounts'] = data[i].Counts + data[i-1].CumulativeCounts;
+    }else{
+      data[i]['CumulativeCounts'] = data[i].Counts;
+    }
+  }
+  //now calculate cumulative % from the cumulative Countss & total, round %
+  for(var i = 0; i < data.length; i++){
+    data[i]['CumulativePercentage'] = (data[i]['CumulativeCounts'] / totalCounts);
+    data[i]['CumulativePercentage'] = parseFloat(data[i]['CumulativePercentage'].toFixed(2));
+  }
+
+  dataset = data;
+
+  //Axes and scales
+  var xScale = d3.scale.ordinal().rangeRoundBands([0, w], 0.1);
+  xScale.domain(data.map(function(d) { return d.Account_created; }));
+
+  var yhist = d3.scale.linear()
+                  .domain([0, d3.max(data, function(d) { return d.Counts; })])
+                  .range([h, 0]);
+
+  var ycum = d3.scale.linear().domain([0, 1]).range([h, 0]);
+
+  var xAxis = d3.svg.axis()
+                .scale(xScale)
+                .orient('bottom');
+
+  var yAxis = d3.svg.axis()
+                .scale(yhist)
+                .orient('left');
+
+  var yAxis2 = d3.svg.axis()
+                 .scale(ycum)
+                 .orient('right');
+
+  //Draw svg
+  var svg = d3.select("body").append("svg")
+              .attr("width", w + m.left + m.right)
+              .attr("height", h + m.top + m.bottom)
+              .append("g")
+              .attr("transform", "translate(" + m.left + "," + m.top + ")");
+
+  //Draw histogram
+  var bar = svg.selectAll(".bar")
+                .data(data)
+                .enter().append("g")
+                .attr("class", "bar");
+
+  bar.append("rect")
+      .attr("x", function(d) { return xScale(d.Account_created); })
+      .attr("width", xScale.rangeBand())
+      .attr("y", function(d) { return yhist(d.Counts); })
+      .attr("height", function(d) { return h - yhist(d.Counts); });
+
+  //Draw CDF line
+  var guide = d3.svg.line()
+                .x(function(d) { return xScale(d.Account_created); })
+                .y(function(d){ return ycum(d.CumulativePercentage) })
+                .interpolate('basis');
+
+  var line = svg.append('path')
+                .datum(data)
+                .attr('d', guide)
+                .attr('class', 'line');
+
+  //Draw axes
+  svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + h + ")")
+      .call(xAxis);
+
+  svg.append("g")
+      .attr("class", "y axis")
+      .call(yAxis)
+      .append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 6)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text("Counts");
+
+  svg.append("g")
+      .attr("class", "y axis")
+      .attr("transform", "translate(" + [w, 0] + ")")
+      .call(yAxis2)
+      .append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 4)
+      .attr("dy", "-.71em")
+      .style("text-anchor", "end")
+      .text("Cumulative %");
+});
+</script>
+</body>

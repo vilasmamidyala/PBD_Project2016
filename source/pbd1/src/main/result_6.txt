@@ -1,0 +1,7 @@
+source	total_count
+Twitter for iPhone	40387
+Twitter for Android	38060
+Twitter Web Client	13592
+twitterfeed	848
+Facebook	1885
+Twitter for Android Tablets	70
