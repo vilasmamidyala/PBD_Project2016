@@ -1,0 +1,159 @@
+
+val sqlcontext = new org.apache.spark.sql.SQLContext(sc)
+
+
+val dashdata = sqlcontext.load("jdbc", Map(
+"url" -> "jdbc:db2://awh-yp-small03.services.dal.bluemix.net:50000/BLUDB:user=dash104128;password=obQToQeHEavR;",
+"dbtable" -> "DASH104128.VIRAT_TWEETS"))
+
+dashdata.registerTempTable("tweets")
+
+dashdata.printSchema
+
+val count1  =  sqlcontext.sql("select USER_DISPLAY_NAME,max(USER_FOLLOWERS_COUNT) as followers from tweets  GROUP by USER_DISPLAY_NAME  order by followers desc limit  20 ")
+
+count1.show()
+
+count1.saveAsParquetFile("follow.parquet")
+
+val sqlcontext = new org.apache.spark.sql.SQLContext(sc)
+
+val dashdata = sqlcontext.load("jdbc", Map(
+"url" -> "jdbc:db2://awh-yp-small03.services.dal.bluemix.net:50000/BLUDB:user=dash104128;password=obQToQeHEavR;",
+"dbtable" -> "DASH104128.VIRAT_HASHTAGS"))
+
+
+dashdata.registerTempTable("tweets")
+
+dashdata.printSchema
+
+val count2  =  sqlcontext.sql("select DISTINCT (HASHTAG),COUNT (*) as count from tweets GROUP BY HASHTAG having count>100  order by count desc")
+
+count2.show()
+
+count2.saveAsParquetFile("count2.parquet")
+
+val sqlcontext = new org.apache.spark.sql.SQLContext(sc)
+
+val dashdata = sqlcontext.load("jdbc", Map(
+"url" -> "jdbc:db2://awh-yp-small03.services.dal.bluemix.net:50000/BLUDB:user=dash104128;password=obQToQeHEavR;",
+"dbtable" -> "DASH104128.VIRAT_TWEETS"))
+
+
+dashdata.registerTempTable("tweets")
+
+dashdata.printSchema
+
+val count3  =  sqlcontext.sql("SELECT USER_CITY, COUNT(*) AS counts FROM tweets GROUP BY USER_CITY HAVING USER_CITY in ('Mumbai','New Delhi','Bangalore','Chennai','Pune') order by 2 desc")
+
+
+count3.show()
+
+count3.saveAsParquetFile("city.parquet")
+
+val sqlcontext = new org.apache.spark.sql.SQLContext(sc)
+
+
+val dashdata = sqlcontext.load("jdbc", Map(
+"url" -> "jdbc:db2://awh-yp-small03.services.dal.bluemix.net:50000/BLUDB:user=dash104128;password=obQToQeHEavR;",
+"dbtable" -> "DASH104128.VIRAT_TWEETS"))
+
+dashdata.registerTempTable("tweets")
+
+dashdata.printSchema
+
+val count4  =  sqlcontext.sql("SELECT DISTINCT USER_COUNTRY,COUNT(*) AS ENGCOUNT FROM tweets WHERE MESSAGE_LANGUAGE='en' and USER_COUNTRY NOT IN ('INDIA','India','india','null') GROUP BY USER_COUNTRY order by 2 desc limit 50")
+
+count4.show()
+
+count4.saveAsParquetFile("country.parquet")
+
+val sqlcontext = new org.apache.spark.sql.SQLContext(sc)
+
+val dashdata1 = sqlcontext.load("jdbc", Map(
+"url" -> "jdbc:db2://awh-yp-small03.services.dal.bluemix.net:50000/BLUDB:user=dash104128;password=obQToQeHEavR;",
+"dbtable" -> "DASH104128.VIRAT_TWEETS"))
+
+dashdata1.registerTempTable("tweets")
+
+dashdata1.printSchema
+
+val count5  =  sqlcontext.sql("select DISTINCT MESSAGE_GENERATOR_DISPLAY_NAME, COUNT(*) AS COUNT from tweets where MESSAGE_GENERATOR_DISPLAY_NAME in ('Twitter for Android','Twitter Web Client','Twitter for iPhone','twitterfeed','Facebook') GROUP BY MESSAGE_GENERATOR_DISPLAY_NAME")
+
+count5.show()
+
+count5.saveAsParquetFile("sources.parquet")
+
+val sqlcontext = new org.apache.spark.sql.SQLContext(sc)
+
+val dashdata1 = sqlcontext.load("jdbc", Map(
+"url" -> "jdbc:db2://awh-yp-small03.services.dal.bluemix.net:50000/BLUDB:user=dash104128;password=obQToQeHEavR;",
+"dbtable" -> "DASH104128.VIRAT_HASHTAGS"))
+
+val dashdata2 = sqlcontext.load("jdbc", Map(
+"url" -> "jdbc:db2://awh-yp-small03.services.dal.bluemix.net:50000/BLUDB:user=dash104128;password=obQToQeHEavR;",
+"dbtable" -> "DASH104128.IPL_HASHTAGS"))
+
+dashdata1.registerTempTable("CRICKET1")
+
+dashdata2.registerTempTable("CRICKET2")
+
+dashdata1.printSchema
+
+dashdata2.printSchema
+
+val count6  =  sqlcontext.sql("select HASHTAG,count(*) AS COUNTS from CRICKET1 WHERE HASHTAG IN ('RCB','CSK','KKR','MI') group by HASHTAG ORDER BY 2 DESC")
+
+count6.show()
+
+val count7  =  sqlcontext.sql("select HASHTAG,count(*) AS COUNTS from CRICKET2 WHERE HASHTAG IN ('RCB','CSK','KKR','MI') group by HASHTAG ORDER BY 2 DESC")
+
+count7.show()
+
+count6.saveAsParquetFile("hash1.parquet")
+
+count7.saveAsParquetFile("hash2.parquet")
+
+
+
+val sqlcontext = new org.apache.spark.sql.SQLContext(sc)
+
+val dashdata = sqlcontext.load("jdbc", Map(
+"url" -> "jdbc:db2://awh-yp-small03.services.dal.bluemix.net:50000/BLUDB:user=dash105236;password=4M0aRfptm8Vs;",
+"dbtable" -> "DASH105236.DANCE1_TWEETS"))
+
+
+
+dashdata.registerTempTable("tweets")
+
+val count1  =  sqlcontext.sql("select distinct USER_GENDER,count(*) as count from tweets group by USER_GENDER having USER_GENDER IN ('male','female')")
+
+count1.show()
+
+count1.saveAsParquetFile("gender.parquet")
+
+
+val sqlcontext = new org.apache.spark.sql.SQLContext(sc)
+
+val dashdata = sqlcontext.load("jdbc", Map(
+"url" -> "jdbc:db2://awh-yp-small03.services.dal.bluemix.net:50000/BLUDB:user=dash105236;password=4M0aRfptm8Vs;",
+"dbtable" -> "DASH105236.DANCE1_TWEETS"))
+
+
+dashdata.registerTempTable("senti")
+
+
+val count2  =  sqlcontext.sql("select USER_GENDER,count(*) as counts from senti where MESSAGE_BODY like('%like%') or MESSAGE_BODY like('%love%') GROUP BY USER_GENDER HAVING USER_GENDER IN ('male','female')")
+
+val count3  =  sqlcontext.sql("select USER_GENDER,count(*) as counts from senti where MESSAGE_BODY like '%hate%' or MESSAGE_BODY like '%angry%' GROUP BY USER_GENDER HAVING USER_GENDER IN ('male','female')")
+
+
+count2.show()
+
+count3.show()
+
+count2.saveAsParquetFile("senti.parquet")
+
+count3.saveAsParquetFile("senti2.parquet")
+
+
