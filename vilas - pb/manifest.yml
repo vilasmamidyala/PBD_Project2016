@@ -1,0 +1,6 @@
+---
+applications:
+- name: pb
+  memory: 1024M
+  host: pbv
+  domain: mybluemix.net
